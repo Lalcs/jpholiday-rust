@@ -10,7 +10,7 @@ keywords = ["japan", "holiday", "calendar"]
 categories = ["date-and-time"]
 readme = "README.md"
 license = "MIT"
-exclude = [".idea"]
+exclude = [".idea", ".github"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
