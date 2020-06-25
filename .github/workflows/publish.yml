@@ -1,0 +1,28 @@
+name: Publish
+
+on:
+  release:
+    types: [created]
+
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [stable]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Setup Rust
+        uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: ${{ matrix.rust }}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Login crates.io
+        run: cargo login ${{ secrets.CRATES_TOKEN }}
+      - name: Publish
+        run: cargo publish
