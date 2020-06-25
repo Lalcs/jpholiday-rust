@@ -1,7 +1,7 @@
 //! # JPHoliday
 //! 日本の祝日を取得するライブラリ
 //!
-//! ### 指定日の祝日名を取得
+//! ## 指定日の祝日名を取得
 //! ```rust
 //! use jpholiday::jpholiday::JPHoliday;
 //! use jpholiday::chrono::{NaiveDate};
@@ -25,7 +25,7 @@
 //! );
 //! ```
 //!
-//! ### 指定日が祝日か判定
+//! ## 指定日が祝日か判定
 //! ```rust
 //! use jpholiday::jpholiday::JPHoliday;
 //! use jpholiday::chrono::{NaiveDate};
@@ -49,7 +49,7 @@
 //! );
 //! ```
 //!
-//! ### 指定年の祝日を取得
+//! ## 指定年の祝日を取得
 //! ```rust
 //! use jpholiday::jpholiday::JPHoliday;
 //! use jpholiday::chrono::{NaiveDate};
@@ -81,7 +81,7 @@
 //! );
 //! ```
 //!
-//! ### 指定月の祝日を取得
+//! ## 指定月の祝日を取得
 //! ```rust
 //! use jpholiday::jpholiday::JPHoliday;
 //! use jpholiday::chrono::{NaiveDate};
@@ -99,7 +99,7 @@
 //! );
 //! ```
 //!
-//! ### 指定範囲の祝日を取得
+//! ## 指定範囲の祝日を取得
 //! ```rust
 //! use jpholiday::jpholiday::JPHoliday;
 //! use jpholiday::chrono::{NaiveDate};

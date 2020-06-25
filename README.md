@@ -1,6 +1,6 @@
 # JPHoliday
 [![image](https://img.shields.io/crates/v/jpholiday)](https://crates.io/crates/jpholiday)
-[![image](https://docs.rs/jpholiday/badge.svg)](https://docs.rs/jpholiday/0.1.0/jpholiday/)
+[![image](https://docs.rs/jpholiday/badge.svg)](https://docs.rs/jpholiday/)
 
 日本の祝日を取得するライブラリ
 
