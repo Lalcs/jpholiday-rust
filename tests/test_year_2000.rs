@@ -1,12 +1,12 @@
 extern crate jpholiday;
 use jpholiday::jpholiday::JPHoliday;
-use chrono::{NaiveDate};
+use jpholiday::chrono::{NaiveDate};
 use std::borrow::Borrow;
 
 #[test]
 fn test_holiday_2000() {
     let jpholiday = JPHoliday::new();
-    assert_eq!(jpholiday.is_holiday_name(NaiveDate::from_ymd(2000, 1, 1).borrow()).unwrap(), "元旦".to_string());
+    assert_eq!(jpholiday.is_holiday_name(NaiveDate::from_ymd(2000, 1, 1).borrow()).unwrap(), "元日".to_string());
     assert_eq!(jpholiday.is_holiday_name(NaiveDate::from_ymd(2000, 1, 10).borrow()).unwrap(), "成人の日".to_string());
     assert_eq!(jpholiday.is_holiday_name(NaiveDate::from_ymd(2000, 2, 11).borrow()).unwrap(), "建国記念の日".to_string());
     assert_eq!(jpholiday.is_holiday_name(NaiveDate::from_ymd(2000, 3, 20).borrow()).unwrap(), "春分の日".to_string());

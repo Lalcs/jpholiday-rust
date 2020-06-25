@@ -1,4 +1,5 @@
-use chrono::{Datelike, NaiveDate, Weekday, Duration};
+use super::chrono::{Datelike, NaiveDate, Weekday, Duration};
+
 use std::ops::{Add};
 
 pub fn week_day(date: &NaiveDate, week: u8, week_day: Weekday) -> Result<NaiveDate, &str> {

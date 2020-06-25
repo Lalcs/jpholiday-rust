@@ -1,5 +1,5 @@
 use std::ops::Add;
-use chrono::{Datelike, NaiveDate, Duration};
+use super::chrono::{Datelike, NaiveDate, Duration};
 
 use super::registry::Registry;
 use super::holidays::*;

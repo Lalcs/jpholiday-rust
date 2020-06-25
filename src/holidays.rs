@@ -1,4 +1,4 @@
-use chrono::{Datelike, NaiveDate, Weekday, Duration};
+use super::chrono::{Datelike, NaiveDate, Weekday, Duration};
 use super::utils::{week_day};
 use std::borrow::Borrow;
 use super::registry::Registry;
@@ -28,7 +28,7 @@ pub trait Holiday: DynClone {
 }
 dyn_clone::clone_trait_object!(Holiday);
 
-// 元旦
+// 元日
 #[derive(Clone)]
 pub struct NewYear {}
 
@@ -41,7 +41,7 @@ impl Holiday for NewYear {
         return false;
     }
     fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
-        "元旦".to_string()
+        "元日".to_string()
     }
 }
 
