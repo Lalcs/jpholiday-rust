@@ -82,17 +82,17 @@ impl<'a> JPHoliday<'a> {
     ///
     /// let jpholiday = JPHoliday::new();
     ///
-    /// assert_eq(
+    /// assert_eq!(
     ///     jpholiday.is_holiday_name(NaiveDate::from_ymd(2017, 1, 1).borrow()).unwrap(),
     ///     "元日".to_string()
     /// );
     ///
-    /// assert_eq(
+    /// assert_eq!(
     ///     jpholiday.is_holiday_name(NaiveDate::from_ymd(2017, 1, 2).borrow()).unwrap(),
     ///     "元日 振替休日".to_string()
     /// );
     ///
-    /// assert_eq(
+    /// assert_eq!(
     ///     jpholiday.is_holiday_name(NaiveDate::from_ymd(2017, 1, 3).borrow()),
     ///     None
     /// );
