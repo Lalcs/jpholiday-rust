@@ -1,9 +1,11 @@
-use chrono::{Datelike, NaiveDate, Weekday};
+use chrono::{Datelike, NaiveDate, Weekday, Duration};
 use super::utils::{week_day};
 use std::borrow::Borrow;
-use crate::registry::Registry;
+use super::registry::Registry;
+use dyn_clone::DynClone;
+use std::ops::Add;
 
-pub trait Holiday {
+pub trait Holiday: DynClone {
     fn is_holiday(&self, date: &NaiveDate) -> bool {
         if self.exists_holiday(date) {
             return true;
@@ -11,21 +13,23 @@ pub trait Holiday {
 
         return false;
     }
-    fn is_holiday_name(&self, date: &NaiveDate) -> Result<&str, &str> {
+    fn is_holiday_name(&self, date: &NaiveDate) -> Option<String> {
         if self.exists_holiday(date) {
-            return Ok(self.resolve_holiday_name(date));
+            return Some(self.resolve_holiday_name(date));
         }
 
-        return Err("祝日ではありません。");
+        return None;
     }
     fn is_basic_holiday(&self) -> bool {
         return true;
     }
     fn exists_holiday(&self, date: &NaiveDate) -> bool;
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str;
+    fn resolve_holiday_name(&self, date: &NaiveDate) -> String;
 }
+dyn_clone::clone_trait_object!(Holiday);
 
 // 元旦
+#[derive(Clone)]
 pub struct NewYear {}
 
 impl Holiday for NewYear {
@@ -36,12 +40,13 @@ impl Holiday for NewYear {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "元旦"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "元旦".to_string()
     }
 }
 
 // 成人の日
+#[derive(Clone)]
 pub struct AdultDay {}
 
 impl Holiday for AdultDay {
@@ -54,12 +59,13 @@ impl Holiday for AdultDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "成人の日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "成人の日".to_string()
     }
 }
 
 // 建国記念の日
+#[derive(Clone)]
 pub struct FoundationDay {}
 
 impl Holiday for FoundationDay {
@@ -70,12 +76,13 @@ impl Holiday for FoundationDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "建国記念の日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "建国記念の日".to_string()
     }
 }
 
 // 天皇誕生日
+#[derive(Clone)]
 pub struct EmperorsBirthday {}
 
 impl Holiday for EmperorsBirthday {
@@ -96,12 +103,13 @@ impl Holiday for EmperorsBirthday {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "天皇誕生日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "天皇誕生日".to_string()
     }
 }
 
 // 春分の日
+#[derive(Clone)]
 pub struct VernalEquinoxDay {}
 
 impl VernalEquinoxDay {
@@ -114,7 +122,7 @@ impl VernalEquinoxDay {
             return 0;
         }
 
-        let mut i: f64 = 0.0;
+        let i: f64;
 
         if (1851..1899 + 1).contains(&year) {
             i = 0.0;
@@ -140,12 +148,13 @@ impl Holiday for VernalEquinoxDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "春分の日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "春分の日".to_string()
     }
 }
 
 // みどりの日
+#[derive(Clone)]
 pub struct GreeneryDay {}
 
 impl Holiday for GreeneryDay {
@@ -159,12 +168,13 @@ impl Holiday for GreeneryDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "みどりの日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "みどりの日".to_string()
     }
 }
 
 // 昭和の日
+#[derive(Clone)]
 pub struct ShowaDay {}
 
 impl Holiday for ShowaDay {
@@ -175,12 +185,13 @@ impl Holiday for ShowaDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "昭和の日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "昭和の日".to_string()
     }
 }
 
 // 憲法記念日
+#[derive(Clone)]
 pub struct ConstitutionMemorialDay {}
 
 impl Holiday for ConstitutionMemorialDay {
@@ -191,12 +202,13 @@ impl Holiday for ConstitutionMemorialDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "憲法記念日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "憲法記念日".to_string()
     }
 }
 
 // こどもの日
+#[derive(Clone)]
 pub struct ChildrensDay {}
 
 impl Holiday for ChildrensDay {
@@ -207,12 +219,13 @@ impl Holiday for ChildrensDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "こどもの日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "こどもの日".to_string()
     }
 }
 
 // 海の日
+#[derive(Clone)]
 pub struct SeaDay {}
 
 impl Holiday for SeaDay {
@@ -230,12 +243,13 @@ impl Holiday for SeaDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "海の日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "海の日".to_string()
     }
 }
 
 // 山の日
+#[derive(Clone)]
 pub struct MountainDay {}
 
 impl Holiday for MountainDay {
@@ -252,12 +266,13 @@ impl Holiday for MountainDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "山の日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "山の日".to_string()
     }
 }
 
 // 敬老の日
+#[derive(Clone)]
 pub struct RespectForTheAgedDay {}
 
 impl Holiday for RespectForTheAgedDay {
@@ -270,12 +285,13 @@ impl Holiday for RespectForTheAgedDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "敬老の日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "敬老の日".to_string()
     }
 }
 
 // 秋分の日
+#[derive(Clone)]
 pub struct AutumnEquinoxDay {}
 
 impl AutumnEquinoxDay {
@@ -288,7 +304,7 @@ impl AutumnEquinoxDay {
             return 0;
         }
 
-        let mut i: f64 = 0.0;
+        let i: f64;
 
         if (1851..1899 + 1).contains(&year) {
             i = 22.2588;
@@ -314,12 +330,13 @@ impl Holiday for AutumnEquinoxDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "秋分の日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "秋分の日".to_string()
     }
 }
 
 // 体育の日
+#[derive(Clone)]
 pub struct HealthAndSportsDay {}
 
 impl Holiday for HealthAndSportsDay {
@@ -332,12 +349,13 @@ impl Holiday for HealthAndSportsDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "体育の日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "体育の日".to_string()
     }
 }
 
 // スポーツの日
+#[derive(Clone)]
 pub struct SportsDay {}
 
 impl Holiday for SportsDay {
@@ -352,12 +370,13 @@ impl Holiday for SportsDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "スポーツの日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "スポーツの日".to_string()
     }
 }
 
 // 文化の日
+#[derive(Clone)]
 pub struct CultureDay {}
 
 impl Holiday for CultureDay {
@@ -368,12 +387,13 @@ impl Holiday for CultureDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "文化の日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "文化の日".to_string()
     }
 }
 
 // 勤労感謝の日
+#[derive(Clone)]
 pub struct LaborThanksgivingDay {}
 
 impl Holiday for LaborThanksgivingDay {
@@ -384,30 +404,31 @@ impl Holiday for LaborThanksgivingDay {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
-        "勤労感謝の日"
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "勤労感謝の日".to_string()
     }
 }
 
 // 皇室慶弔行事に伴う祝日
+#[derive(Clone)]
 pub struct ExtraHolidays {}
 
 impl ExtraHolidays {
-    fn extra_holiday_name(&self, date: &NaiveDate) -> Option<&str> {
+    fn extra_holiday_name(&self, date: &NaiveDate) -> Option<String> {
         if date == NaiveDate::from_ymd(1959, 4, 10).borrow() {
-            return Some("皇太子・明仁親王の結婚の儀");
+            return Some("皇太子・明仁親王の結婚の儀".to_string());
         } else if date == NaiveDate::from_ymd(1989, 2, 24).borrow() {
-            return Some("昭和天皇の大喪の礼");
+            return Some("昭和天皇の大喪の礼".to_string());
         } else if date == NaiveDate::from_ymd(1990, 11, 12).borrow() {
-            return Some("即位の礼正殿の儀");
+            return Some("即位の礼正殿の儀".to_string());
         } else if date == NaiveDate::from_ymd(1993, 6, 9).borrow() {
-            return Some("皇太子・皇太子徳仁親王の結婚の儀");
+            return Some("皇太子・皇太子徳仁親王の結婚の儀".to_string());
         } else if date == NaiveDate::from_ymd(2019, 5, 1).borrow() {
-            return Some("天皇の即位の日");
+            return Some("天皇の即位の日".to_string());
         }
         // 2019: 天皇の即位の日及び即位礼正殿の儀の行われる日を休日とする法律
         else if date == NaiveDate::from_ymd(2019, 10, 22).borrow() {
-            return Some("即位礼正殿の儀");
+            return Some("即位礼正殿の儀".to_string());
         }
 
         return None;
@@ -422,33 +443,56 @@ impl Holiday for ExtraHolidays {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
+    fn resolve_holiday_name(&self, date: &NaiveDate) -> String {
         self.extra_holiday_name(date).unwrap()
     }
 }
 
 // 振替休日
+#[derive(Clone)]
 pub struct TransferHoliday<'a> {
-    pub registry: &'a Registry<'a>
+    pub registry: Registry<'a>
 }
 
 impl<'a> TransferHoliday<'a> {
-    fn transfer_holiday_name(&self, date: &NaiveDate) -> Option<&str> {
+    fn transfer_holiday_name(&self, date: &NaiveDate) -> Option<String> {
         // 1973年(昭和48年)4月12日 - 改正・施行
         if date.year() < 1973 {
             return None;
         }
 
-        if date.month() == 5 && date.day() == 6 && (2..3 + 1).contains(&date.weekday().num_days_from_monday()) {
+        // GW
+        if date.month() == 5 && date.day() == 6 && (2..3 + 1).contains(&date.weekday().num_days_from_sunday()) {
             for holiday in self.registry.get_registry() {
-                println!("{:?}", holiday.resolve_holiday_name(date));
+                if holiday.is_holiday(date.add(Duration::days(-(date.weekday().num_days_from_sunday() as i64))).borrow()) {
+                    let holiday_name = holiday.is_holiday_name(date.add(Duration::days(-(date.weekday().num_days_from_sunday() as i64))).borrow()).unwrap();
+                    return Some(format!("{} {}", holiday_name, self.holiday_name()));
+                }
             }
         }
-        return Some("ddddddddd");
+
+        // 月曜日以外は無視
+        if date.weekday() != Weekday::Mon {
+            return None;
+        }
+
+        // GW以外
+        for holiday in self.registry.get_registry() {
+            if holiday.is_holiday(date.add(Duration::days(-1)).borrow()) {
+                let holiday_name = holiday.is_holiday_name(date.add(Duration::days(-1)).borrow()).unwrap();
+                return Some(format!("{} {}", holiday_name, self.holiday_name()));
+            }
+        }
+
+        return None;
+    }
+
+    fn holiday_name(&self) -> &str {
+        "振替休日"
     }
 }
 
-impl<'a>  Holiday for TransferHoliday<'a> {
+impl<'a> Holiday for TransferHoliday<'a> {
     fn exists_holiday(&self, date: &NaiveDate) -> bool {
         if self.transfer_holiday_name(date).is_some() {
             return true;
@@ -456,10 +500,40 @@ impl<'a>  Holiday for TransferHoliday<'a> {
 
         return false;
     }
-    fn resolve_holiday_name(&self, date: &NaiveDate) -> &str {
+    fn resolve_holiday_name(&self, date: &NaiveDate) -> String {
         self.transfer_holiday_name(date).unwrap()
     }
     fn is_basic_holiday(&self) -> bool {
         return false;
+    }
+}
+
+// 国民の休日
+#[derive(Clone)]
+pub struct NationalHoliday<'a> {
+    pub registry: Registry<'a>
+}
+
+impl<'a> Holiday for NationalHoliday<'a> {
+    fn exists_holiday(&self, date: &NaiveDate) -> bool {
+        let mut result = (false, false);
+
+        for holiday in self.registry.get_registry() {
+            if holiday.is_holiday(date.add(Duration::days(-1)).borrow()) {
+                result.0 = true;
+            }
+            if holiday.is_holiday(date.add(Duration::days(1)).borrow()) {
+                result.1 = true;
+            }
+
+            if result == (true, true) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    fn resolve_holiday_name(&self, _date: &NaiveDate) -> String {
+        "国民の休日".to_string()
     }
 }

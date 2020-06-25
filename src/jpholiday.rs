@@ -3,7 +3,6 @@ use chrono::{Datelike, NaiveDate, Duration};
 
 use super::registry::Registry;
 use super::holidays::*;
-use std::borrow::Borrow;
 
 pub struct JPHoliday<'a> {
     registry: Registry<'a>
@@ -12,6 +11,7 @@ pub struct JPHoliday<'a> {
 impl<'a> JPHoliday<'a> {
     pub fn new() -> Self {
         let mut reg = Registry::new();
+        // BasicHoliday
         reg.register(NewYear {});
         reg.register(AdultDay {});
         reg.register(FoundationDay {});
@@ -30,7 +30,11 @@ impl<'a> JPHoliday<'a> {
         reg.register(CultureDay {});
         reg.register(LaborThanksgivingDay {});
         reg.register(ExtraHolidays {});
-        // reg.register(TransferHoliday { registry: reg.borrow()});
+
+        // OtherHoliday
+        let basic_holiday_registry = reg.clone();
+        reg.register(TransferHoliday { registry: basic_holiday_registry.clone()});
+        reg.register(NationalHoliday { registry: basic_holiday_registry.clone()});
 
         return JPHoliday {
             registry: reg
@@ -47,23 +51,22 @@ impl<'a> JPHoliday<'a> {
         return false;
     }
 
-    pub fn is_holiday_name(&self, date: &NaiveDate) -> Result<&str, &str> {
+    pub fn is_holiday_name(&self, date: &NaiveDate) -> Option<String> {
         for holiday in self.registry.get_registry() {
             if holiday.is_holiday(&date) {
-                return Ok(holiday.is_holiday_name(&date).unwrap());
+                return Some(holiday.is_holiday_name(&date).unwrap());
             }
         }
 
-        return Err("指定された日付は祝日ではありません。");
+        return None;
     }
 
-    pub fn between(&self, start_date: &NaiveDate, end_date: &NaiveDate) -> Vec<(NaiveDate, &str)> {
+    pub fn between(&self, start_date: &NaiveDate, end_date: &NaiveDate) -> Vec<(NaiveDate, String)> {
         let mut date: NaiveDate = start_date.clone();
-        let mut result: Vec<(NaiveDate, &str)> = Vec::new();
+        let mut result: Vec<(NaiveDate, String)> = Vec::new();
 
         loop {
             if self.is_holiday(&date) {
-                let a = self.is_holiday_name(&date).unwrap();
                 result.push((date.clone(), self.is_holiday_name(&date).unwrap()));
             }
             if &date == end_date {
@@ -76,13 +79,12 @@ impl<'a> JPHoliday<'a> {
         return result;
     }
 
-    pub fn year_holidays(&self, year: i32) -> Vec<(NaiveDate, &str)> {
+    pub fn year_holidays(&self, year: i32) -> Vec<(NaiveDate, String)> {
         let mut date: NaiveDate = NaiveDate::from_ymd(year.clone(), 1, 1);
-        let mut result: Vec<(NaiveDate, &str)> = Vec::new();
+        let mut result: Vec<(NaiveDate, String)> = Vec::new();
 
         loop {
             if self.is_holiday(&date) {
-                let a = self.is_holiday_name(&date).unwrap();
                 result.push((date.clone(), self.is_holiday_name(&date).unwrap()));
             }
 
@@ -97,13 +99,12 @@ impl<'a> JPHoliday<'a> {
         return result;
     }
 
-    pub fn month_holidays(&self, year: i32, month: u32) -> Vec<(NaiveDate, &str)> {
+    pub fn month_holidays(&self, year: i32, month: u32) -> Vec<(NaiveDate, String)> {
         let mut date: NaiveDate = NaiveDate::from_ymd(year.clone(), month.clone(), 1);
-        let mut result: Vec<(NaiveDate, &str)> = Vec::new();
+        let mut result: Vec<(NaiveDate, String)> = Vec::new();
 
         loop {
             if self.is_holiday(&date) {
-                let a = self.is_holiday_name(&date).unwrap();
                 result.push((date.clone(), self.is_holiday_name(&date).unwrap()));
             }
 

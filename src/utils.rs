@@ -3,18 +3,19 @@ use std::ops::{Add};
 
 pub fn week_day(date: &NaiveDate, week: u8, week_day: Weekday) -> Result<NaiveDate, &str> {
     let lines: Vec<Vec<u8>> = monthcalendar(date.year(), date.month());
-    let mut days: Vec<u8> = Vec::with_capacity(5);
+    let mut days: Vec<u8> = Vec::with_capacity(6);
 
     for line in lines {
-        if line[week_day.num_days_from_sunday() as usize] == 0 {
-            continue
-        }
 
-        days.push(line[week_day.num_days_from_sunday() as usize])
+        match line.get(week_day.num_days_from_sunday() as usize) {
+            Some(0) => continue,
+            Some(_n) => days.push(line[week_day.num_days_from_sunday() as usize]),
+            None => continue,
+        }
     }
 
     if days.len() < week as usize {
-        return Err("Error: week")
+        panic!("Incorrect week value");
     }
 
     return Ok(NaiveDate::from_ymd(date.year(), date.month(), days[(week-1) as usize] as u32));

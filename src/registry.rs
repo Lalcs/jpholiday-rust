@@ -1,5 +1,6 @@
 use super::holidays::Holiday;
 
+#[derive(Clone)]
 pub struct Registry<'a> {
     registry: Vec<Box<dyn Holiday + 'a>>
 }
