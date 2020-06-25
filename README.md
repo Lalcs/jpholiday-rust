@@ -1,11 +1,15 @@
 # JPHoliday
+[![image](https://img.shields.io/crates/v/jpholiday)](https://crates.io/crates/jpholiday)
+[![image](https://docs.rs/jpholiday/badge.svg)](https://docs.rs/jpholiday/0.1.0/jpholiday/)
+
 日本の祝日を取得するライブラリ
 
 ## Usage
 `Cargo.toml`に追記
 ```toml
 [dependencies]
-jpholiday = "0.1.0"
+jpholiday = "0.1.1"
+chrono = "0.4.11"
 ```
 
 ## Sample Code
