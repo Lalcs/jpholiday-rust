@@ -20,6 +20,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v1
     - name: Run tests
-      run: cargo test --locked
+      run: cargo test
     - name: Run tests feature variation
-      run: cargo test --locked --no-default-features
+      run: cargo test --no-default-features
