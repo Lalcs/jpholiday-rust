@@ -1,0 +1,19 @@
+[package]
+name = "jpholiday"
+version = "0.1.0"
+authors = ["Vatis <vatis@lalcs.com>"]
+edition = "2018"
+description = "Japan Public Holiday Generate for Rust"
+homepage = "https://github.com/Lalcs/jpholiday-rust"
+repository = "https://github.com/Lalcs/jpholiday-rust"
+keywords = ["japan", "holiday", "calendar"]
+categories = ["date-and-time"]
+readme = "README.md"
+license = "MIT"
+exclude = [".idea"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = { version = "0.4", features = ["serde"] }
+dyn-clone = "1.0.2"
