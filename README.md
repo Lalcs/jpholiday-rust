@@ -9,7 +9,7 @@
 `Cargo.toml`に追記
 ```toml
 [dependencies]
-jpholiday = "0.1.3"
+jpholiday = "0.1"
 ```
 
 ## Sample Code
