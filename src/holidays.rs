@@ -97,7 +97,7 @@ impl Holiday for EmperorsBirthday {
             return true;
         }
         // 2019: 国民の祝日に関する法律(昭和23年法律第178号)の一部改正
-        else if date == NaiveDate::from_ymd(2020, 2, 23).borrow() {
+        else if date.year() >= 2020 && date.month() == 2 && date.day() == 23 {
             return true;
         }
 
@@ -125,9 +125,9 @@ impl VernalEquinoxDay {
         let i: f64;
 
         if (1851..1899 + 1).contains(&year) {
-            i = 0.0;
-        } else if (1900..1979 + 1).contains(&year) {
             i = 19.8277;
+        } else if (1900..1979 + 1).contains(&year) {
+            i = 20.8357;
         } else if (1980..2099 + 1).contains(&year) {
             i = 20.8431;
         } else if (2100..2150 + 1).contains(&year) {
@@ -233,11 +233,13 @@ impl Holiday for SeaDay {
         if (1996..2002 + 1).contains(&date.year()) && date.month() == 7 && date.day() == 20 {
             return true;
         }
-        // 2020: 国民の祝日に関する法律(昭和23年法律第178号)の特例
         // 2020: 国民の祝日に関する法律の一部を改正する法律(平成30年法律第57号)
-        else if date == NaiveDate::from_ymd(2020, 7, 23).borrow() {
+        else if date.year() >= 2003 && date.year() != 2020 && date.month() == 7 && date.day() == week_day(date, 3, Weekday::Mon).unwrap().day() {
             return true;
-        } else if date.year() >= 2003 && date.month() == 7 && date.day() == week_day(date, 3, Weekday::Mon).unwrap().day() {
+        }
+
+        // 2020: 国民の祝日に関する法律(昭和23年法律第178号)の特例
+        if date == NaiveDate::from_ymd(2020, 7, 23).borrow() {
             return true;
         }
 
@@ -254,13 +256,14 @@ pub struct MountainDay {}
 
 impl Holiday for MountainDay {
     fn exists_holiday(&self, date: &NaiveDate) -> bool {
+        // 2016: 国民の祝日に関する法律の一部を改正する法律(平成26年法律第43号)
         // 2020: 国民の祝日に関する法律の一部を改正する法律(平成30年法律第57号)
-        // 2020: 国民の祝日に関する法律(昭和23年法律第178号)の特例
-        if date == NaiveDate::from_ymd(2020, 8, 10).borrow() {
+        if date.year() >= 2016 && date.year() != 2020 && date.month() == 8 && date.day() == 11 {
             return true;
         }
-        // 2016: 国民の祝日に関する法律の一部を改正する法律(平成26年法律第43号)
-        else if date.year() >= 2016 && date.month() == 8 && date.day() == 11 {
+
+        // 2020: 国民の祝日に関する法律(昭和23年法律第178号)の特例
+        if date == NaiveDate::from_ymd(2020, 8, 10).borrow() {
             return true;
         }
 
@@ -277,7 +280,7 @@ pub struct RespectForTheAgedDay {}
 
 impl Holiday for RespectForTheAgedDay {
     fn exists_holiday(&self, date: &NaiveDate) -> bool {
-        if (1996..2002 + 1).contains(&date.year()) && date.month() == 9 && date.day() == 15 {
+        if (1966..2002 + 1).contains(&date.year()) && date.month() == 9 && date.day() == 15 {
             return true;
         } else if date.year() >= 2003 && date.month() == 9 && date.day() == week_day(date, 3, Weekday::Mon).unwrap().day() {
             return true;
@@ -341,7 +344,7 @@ pub struct HealthAndSportsDay {}
 
 impl Holiday for HealthAndSportsDay {
     fn exists_holiday(&self, date: &NaiveDate) -> bool {
-        if (1996..1999 + 1).contains(&date.year()) && date.month() == 10 && date.day() == 10 {
+        if (1966..1999 + 1).contains(&date.year()) && date.month() == 10 && date.day() == 10 {
             return true;
         } else if (2000..2019 + 1).contains(&date.year()) && date.month() == 10 && date.day() == week_day(date, 2, Weekday::Mon).unwrap().day() {
             return true;
@@ -361,10 +364,12 @@ pub struct SportsDay {}
 impl Holiday for SportsDay {
     fn exists_holiday(&self, date: &NaiveDate) -> bool {
         // 2020: 国民の祝日に関する法律の一部を改正する法律(平成30年法律第57号)
+        if date.year() >= 2020 && date.year() != 2020 && date.month() == 10 && date.day() == week_day(date, 2, Weekday::Mon).unwrap().day() {
+            return true;
+        }
+
         // 2020: 国民の祝日に関する法律(昭和23年法律第178号)の特例
         if date == NaiveDate::from_ymd(2020, 7, 24).borrow() {
-            return true;
-        } else if date.year() >= 2020 && date.month() == 10 && date.day() == week_day(date, 2, Weekday::Mon).unwrap().day() {
             return true;
         }
 
