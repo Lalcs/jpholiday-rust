@@ -1,8 +1,8 @@
 # JPHoliday
 
-[![crates.io](https://img.shields.io/crates/v/jpholiday-rust.svg)](https://crates.io/crates/jpholiday-rust)
-[![docs.rs](https://docs.rs/jpholiday-rust/badge.svg)](https://docs.rs/jpholiday-rust)
-[![License: MIT](https://img.shields.io/crates/l/jpholiday-rust.svg)](./LICENSE)
+[![crates.io](https://img.shields.io/crates/v/jpholiday.svg)](https://crates.io/crates/jpholiday)
+[![docs.rs](https://docs.rs/jpholiday/badge.svg)](https://docs.rs/jpholiday)
+[![License: MIT](https://img.shields.io/crates/l/jpholiday.svg)](./LICENSE)
 [![CI](https://github.com/Lalcs/jpholiday-rust/actions/workflows/ci.yml/badge.svg)](https://github.com/Lalcs/jpholiday-rust/actions/workflows/ci.yml)
 
 このライブラリは、[内閣府](https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html)
@@ -17,10 +17,8 @@
 
 ```toml
 [dependencies]
-jpholiday-rust = "0.2"
+jpholiday = "0.2"
 ```
-
-クレート名は `jpholiday-rust`、ライブラリ名は `jpholiday` です。コードでは `jpholiday::` で参照します。
 
 ## Class
 

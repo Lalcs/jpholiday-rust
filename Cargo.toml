@@ -1,5 +1,5 @@
 [package]
-name = "jpholiday-rust"
+name = "jpholiday"
 version = "0.2.0"
 edition = "2024"
 rust-version = "1.96"
@@ -8,15 +8,11 @@ license = "MIT"
 readme = "README.md"
 repository = "https://github.com/Lalcs/jpholiday-rust"
 homepage = "https://github.com/Lalcs/jpholiday-rust"
-documentation = "https://docs.rs/jpholiday-rust"
+documentation = "https://docs.rs/jpholiday"
 # crates.io の keyword は ASCII のみ許可されるため「祝日」は romaji の "shukujitsu" を用いる。
 keywords = ["japan", "holiday", "japanese", "calendar", "shukujitsu"]
 categories = ["date-and-time", "localization"]
 authors = ["Kazuki Hayashi"]
-
-[lib]
-name = "jpholiday"
-path = "src/lib.rs"
 
 [dependencies]
 

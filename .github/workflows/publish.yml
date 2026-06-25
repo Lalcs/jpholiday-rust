@@ -1,0 +1,41 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  publish:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      # タグ v0.2.0 → バージョン 0.2.0 を取り出す。
+      - name: Derive version from tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "Tag ${GITHUB_REF_NAME} -> version ${VERSION}"
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+
+      # Cargo.toml の version をタグの値で上書きする（手動更新が不要になる）。
+      - name: Inject version into Cargo.toml
+        run: |
+          sed -i -E "s/^version = \".*\"/version = \"${VERSION}\"/" Cargo.toml
+          grep -m1 '^version = ' Cargo.toml
+
+      - name: Verify build and tests
+        run: cargo test --verbose
+
+      # sed で Cargo.toml を書き換えたため --allow-dirty が必要。
+      - name: Publish to crates.io
+        run: cargo publish --allow-dirty --token "${{ secrets.CARGO_REGISTRY_TOKEN }}"
