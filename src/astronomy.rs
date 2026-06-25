@@ -1,8 +1,7 @@
 //! 春分・秋分の天文計算。
 //!
 //! Jean Meeus 『Astronomical Algorithms』(2nd ed.) に基づき、太陽の黄経を求めて
-//! Newton 法で分点の瞬刻を計算します。標準ライブラリのみで完結し、本家 Python 版
-//! (`jpholiday/checker/astronomy.py`) を演算順序まで忠実に移植したものです。
+//! Newton 法で分点の瞬刻を計算します。標準ライブラリのみで完結します。
 //!
 //! - 精度: 1948〜3000 年で ±1 日
 //! - 対応範囲: 1948 年以降（1948 年より前は 0 を返す）
@@ -18,7 +17,7 @@ const DEGREES_TO_RADIANS: f64 = std::f64::consts::PI / 180.0;
 
 /// ユリウス日 → 日時の分解結果。
 ///
-/// `julian_day_to_datetime` の戻り値であり、本家の `datetime.datetime` に対応します。
+/// `julian_day_to_datetime` の戻り値です。
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct JulianDateTime {
     /// 年。
@@ -190,7 +189,7 @@ pub fn julian_day_to_datetime(jd: f64) -> JulianDateTime {
     let month = if e < 14.0 { e - 1.0 } else { e - 13.0 };
     let year = if month > 2.0 { c - 4716.0 } else { c - 4715.0 };
 
-    // 日・時・分・秒・マイクロ秒へ分解（Python の int() = 0 方向への切り捨て）。
+    // 日・時・分・秒・マイクロ秒へ分解（0 方向への切り捨て）。
     let day_int = day.trunc() as i64;
     let hour_frac = (day - day_int as f64) * 24.0;
     let hour = hour_frac.trunc() as i64;
@@ -213,7 +212,6 @@ pub fn julian_day_to_datetime(jd: f64) -> JulianDateTime {
 
 /// UTC の分点日時を日本標準時 (UTC+9) に直したときの「日」を返します。
 ///
-/// 本家は `datetime` に対し `timedelta(hours=9)` を加算してから日付を読み出すため、
 /// 9 時間加算で時が 24 を超えた場合のみ翌日へ繰り上げます（分・秒は繰り上げに影響しない）。
 fn jst_day(utc: JulianDateTime, expected_month: u32) -> u32 {
     let base = Date::new(utc.year, utc.month, utc.day)

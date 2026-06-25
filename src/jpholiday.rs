@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 /// 日本の祝日を判定するクラス。
 ///
-/// 本家 Python 版の `JPHoliday` クラスに対応します。判定結果は日付単位でキャッシュされます。
+/// 判定結果は日付単位でキャッシュされます。
 /// キャッシュは問い合わせた日付ごとに増えるため、多数の日付を問い合わせる場合はインスタンスを
 /// drop することでまとめて解放できます（グローバル関数 API はキャッシュを持ちません）。
 ///
@@ -98,7 +98,7 @@ impl JPHoliday {
 
     /// 独自の祝日チェッカーを登録します。
     ///
-    /// 同一型のチェッカーが既に登録されている場合は何もしません（本家の重複排除に対応）。
+    /// 同一型のチェッカーが既に登録されている場合は何もしません。
     pub fn register<C: OriginalHolidayChecker + 'static>(&mut self, checker: C) {
         self.cache.borrow_mut().clear();
         self.registry.register(checker);
@@ -106,8 +106,7 @@ impl JPHoliday {
 
     /// 指定型の独自祝日チェッカーを登録解除します。
     ///
-    /// 本家はインスタンスを渡しますが、Rust では型パラメータで指定します
-    /// （例: `jp.unregister::<MyHoliday>()`）。
+    /// 登録解除は型パラメータで指定します（例: `jp.unregister::<MyHoliday>()`）。
     pub fn unregister<C: OriginalHolidayChecker + 'static>(&mut self) {
         self.cache.borrow_mut().clear();
         self.registry.unregister::<C>();

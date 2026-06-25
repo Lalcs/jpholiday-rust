@@ -1,8 +1,8 @@
 //! 依存ゼロの暦日付型。
 //!
-//! Python の `datetime.date` に相当する最小限の日付を提供します。先発グレゴリオ暦
-//! (proleptic Gregorian calendar) を用い、曜日計算・日数加減算は CPython の
-//! `datetime` モジュールと同一のアルゴリズム（序数 ↔ 年月日の相互変換）で実装しています。
+//! 年月日のみを保持する最小限の日付を提供します。先発グレゴリオ暦
+//! (proleptic Gregorian calendar) を用い、曜日計算・日数加減算は
+//! 序数 ↔ 年月日の相互変換アルゴリズムで実装しています。
 
 use crate::error::DateError;
 use std::fmt;
@@ -107,12 +107,12 @@ impl Date {
         self.day
     }
 
-    /// 1 年 1 月 1 日を 1 とする序数（CPython の `date.toordinal()` 互換）を返します。
+    /// 1 年 1 月 1 日を 1 とする序数を返します。
     pub fn to_ordinal(self) -> i64 {
         days_before_year(self.year) + days_before_month(self.year, self.month) + self.day as i64
     }
 
-    /// 序数から日付を復元します（CPython の `_ord2ymd` 互換）。
+    /// 序数から日付を復元します。
     pub fn from_ordinal(ordinal: i64) -> Self {
         // 0 始まりにする。
         let mut n = ordinal - 1;
@@ -176,13 +176,13 @@ impl Date {
         self.add_days(-1)
     }
 
-    /// ISO 曜日を返します（月曜=1 〜 日曜=7）。Python の `date.isoweekday()` 互換。
+    /// ISO 曜日を返します（月曜=1 〜 日曜=7）。
     #[inline]
     pub fn iso_weekday(self) -> u32 {
         ((self.to_ordinal() - 1).rem_euclid(7) + 1) as u32
     }
 
-    /// 曜日を返します（月曜=0 〜 日曜=6）。Python の `date.weekday()` 互換。
+    /// 曜日を返します（月曜=0 〜 日曜=6）。
     #[inline]
     pub fn weekday(self) -> u32 {
         (self.to_ordinal() - 1).rem_euclid(7) as u32

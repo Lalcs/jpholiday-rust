@@ -37,7 +37,7 @@ fn global_api_survives_a_panicking_checker() {
         "the panicking checker should propagate for this one call"
     );
 
-    // poison から回復し、以降の呼び出しは正常に動作し続ける（本家 Python と同じ一時的失敗）。
+    // poison から回復し、以降の呼び出しは正常に動作し続ける（panic は一時的失敗にとどまる）。
     assert!(jpholiday::is_holiday(d(2017, 1, 1))); // 元日
     assert_eq!(
         jpholiday::is_holiday_name(d(2017, 1, 1)).as_deref(),

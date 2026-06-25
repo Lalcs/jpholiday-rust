@@ -1,4 +1,4 @@
-//! 本家 `test_astronomy.py` / `test_basic.py` の春分・秋分テーブルと天文関数の移植。
+//! 春分・秋分テーブルと天文関数の検証。
 
 use jpholiday::astronomy;
 

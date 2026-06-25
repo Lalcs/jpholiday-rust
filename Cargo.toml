@@ -1,13 +1,13 @@
 [package]
 name = "jpholiday-rust"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
-rust-version = "1.85"
-description = "Pure-Rust library to determine Japanese public holidays — a faithful port of the Python jpholiday. 日本の祝日を扱う依存ゼロのRustライブラリ。"
+rust-version = "1.96"
+description = "Pure-Rust library to determine Japanese public holidays. 日本の祝日を扱う依存ゼロのRustライブラリ。"
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/Lalcs/jpholiday"
-homepage = "https://github.com/Lalcs/jpholiday"
+repository = "https://github.com/Lalcs/jpholiday-rust"
+homepage = "https://github.com/Lalcs/jpholiday-rust"
 documentation = "https://docs.rs/jpholiday-rust"
 # crates.io の keyword は ASCII のみ許可されるため「祝日」は romaji の "shukujitsu" を用いる。
 keywords = ["japan", "holiday", "japanese", "calendar", "shukujitsu"]

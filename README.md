@@ -1,105 +1,119 @@
-# jpholiday (Rust)
+# JPHoliday
 
-[![CI](https://github.com/Lalcs/jpholiday/actions/workflows/ci.yml/badge.svg)](https://github.com/Lalcs/jpholiday/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![crates.io](https://img.shields.io/crates/v/jpholiday-rust.svg)](https://crates.io/crates/jpholiday-rust)
+[![docs.rs](https://docs.rs/jpholiday-rust/badge.svg)](https://docs.rs/jpholiday-rust)
+[![License: MIT](https://img.shields.io/crates/l/jpholiday-rust.svg)](./LICENSE)
+[![CI](https://github.com/Lalcs/jpholiday-rust/actions/workflows/ci.yml/badge.svg)](https://github.com/Lalcs/jpholiday-rust/actions/workflows/ci.yml)
 
-日本の祝日を判定する**依存ゼロ**の Rust ライブラリです。Python 製
-[jpholiday](https://github.com/Lalcs/jpholiday) を忠実に移植したもので、
-[内閣府が公表しているデータ](https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html)
-に基づき、**振替休日**・**国民の休日**・**春分/秋分の日（天文計算）**まで再現します。
+このライブラリは、[内閣府](https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html)
+が公表しているデータを基に、日本の国民の祝日を簡単に取得できるようにしたものです。
+標準ライブラリのみで動作し、外部クレートには一切依存しません。
+**2027年**までの祝日は公式発表された内容に基づいて動作確認済みです。
+それ以降についても取得は可能ですが、内閣府からの正式な公表がないため、正確性は保証されません。
 
-A dependency-free Rust library for determining Japanese public holidays — a faithful
-port of the Python [jpholiday](https://github.com/Lalcs/jpholiday). It reproduces
-substitute holidays (振替休日), citizens' holidays (国民の休日), and the
-astronomically-computed spring/autumn equinox days.
+## Installation
 
-> **2027 年**までの祝日は内閣府の公式発表に基づき動作確認済みです。それ以降も取得できますが、
-> 正式な公表がないため正確性は保証されません。
->
-> Holidays up to **2027** are verified against the official announcement. Later dates are
-> computed but not officially confirmed.
-
-## ✨ 特徴 / Features
-
-- 🦀 **依存ゼロ** — 標準ライブラリのみ。`chrono` や `time` を必要としません。
-- 📅 **独自の `Date` 型** — 先発グレゴリオ暦に基づく軽量な日付型を内蔵。
-- 🌸 **天文計算** — 春分・秋分の日を太陽黄経から算出（1948〜3000 年で ±1 日）。
-- 🔁 **振替休日・国民の休日** — 祝日法の年代別ロジックを完全再現。
-- 🧩 **独自祝日の登録** — `OriginalHolidayChecker` トレイトで拡張可能。
-- ✅ **1,000 件超のゴールデンテスト** — 本家の 1971〜2027 年テストを移植して検証。
-
-## 📦 インストール / Installation
+`Cargo.toml` に追記:
 
 ```toml
-# Cargo.toml
 [dependencies]
-jpholiday-rust = "0.1"
+jpholiday-rust = "0.2"
 ```
 
 クレート名は `jpholiday-rust`、ライブラリ名は `jpholiday` です。コードでは `jpholiday::` で参照します。
 
-```rust
-use jpholiday::Date;
-```
+## Class
 
-## 🚀 使い方 / Usage
-
-### 関数 API / Function API
-
-```rust
-use jpholiday::Date;
-
-// 指定日が祝日か / Is it a holiday?
-assert!(jpholiday::is_holiday(Date::new(2017, 1, 1).unwrap()));
-assert!(!jpholiday::is_holiday(Date::new(2017, 1, 3).unwrap()));
-
-// 祝日名（振替休日も含む）/ Holiday name (incl. substitute holidays)
-assert_eq!(
-    jpholiday::is_holiday_name(Date::new(2017, 1, 2).unwrap()).as_deref(),
-    Some("元日 振替休日")
-);
-assert_eq!(jpholiday::is_holiday_name(Date::new(2017, 1, 3).unwrap()), None);
-
-// その年の祝日一覧 / All holidays in a year
-for (date, name) in jpholiday::year_holidays(2017) {
-    println!("{date} {name}");
-}
-
-// その月の祝日一覧 / All holidays in a month
-let may = jpholiday::month_holidays(2017, 5);
-assert_eq!(may.len(), 3);
-
-// 指定範囲（両端含む）/ Within a date range (inclusive)
-let golden_week = jpholiday::between(
-    Date::new(2017, 5, 1).unwrap(),
-    Date::new(2017, 5, 5).unwrap(),
-);
-```
-
-### クラス API / Class API
+### 指定日の祝日名を取得
 
 ```rust
 use jpholiday::{Date, JPHoliday};
 
-let jp = JPHoliday::new();
+let jpholiday = JPHoliday::new();
 
-let holidays = jp.holidays(Date::new(2020, 1, 1).unwrap());
-assert_eq!(holidays[0].name, "元日");
+jpholiday.holidays(Date::new(2017, 1, 1).unwrap());
+// => [Holiday { date: 2017-01-01, name: "元日" }]
 
-assert!(jp.is_holiday(Date::new(2020, 1, 1).unwrap()));
-let _ = jp.year_holidays(2020);
-let _ = jp.month_holidays(2020, 5);
-let _ = jp.between(Date::new(2020, 1, 1).unwrap(), Date::new(2020, 12, 31).unwrap());
+jpholiday.holidays(Date::new(2017, 1, 2).unwrap());
+// => [Holiday { date: 2017-01-02, name: "元日 振替休日" }]
+
+jpholiday.holidays(Date::new(2017, 1, 3).unwrap());
+// => []
 ```
 
-### 独自の祝日を追加 / Custom holidays
+### 指定日が祝日か判定
+
+```rust
+use jpholiday::{Date, JPHoliday};
+
+let jpholiday = JPHoliday::new();
+
+jpholiday.is_holiday(Date::new(2017, 1, 1).unwrap());
+// => true
+jpholiday.is_holiday(Date::new(2017, 1, 2).unwrap());
+// => true
+jpholiday.is_holiday(Date::new(2017, 1, 3).unwrap());
+// => false
+```
+
+### 指定年の祝日を取得
+
+```rust
+use jpholiday::{Date, JPHoliday};
+
+let jpholiday = JPHoliday::new();
+
+jpholiday.year_holidays(2017);
+// => [
+//   Holiday { date: 2017-01-01, name: "元日" },
+//   Holiday { date: 2017-01-02, name: "元日 振替休日" },
+//   Holiday { date: 2017-01-09, name: "成人の日" },
+//   ...
+// ]
+```
+
+### 指定月の祝日を取得
+
+```rust
+use jpholiday::{Date, JPHoliday};
+
+let jpholiday = JPHoliday::new();
+
+jpholiday.month_holidays(2017, 5);
+// => [
+//   Holiday { date: 2017-05-03, name: "憲法記念日" },
+//   Holiday { date: 2017-05-04, name: "みどりの日" },
+//   Holiday { date: 2017-05-05, name: "こどもの日" },
+// ]
+```
+
+### 指定範囲の祝日を取得
+
+```rust
+use jpholiday::{Date, JPHoliday};
+
+let jpholiday = JPHoliday::new();
+
+jpholiday.between(
+    Date::new(2017, 1, 1).unwrap(),
+    Date::new(2017, 5, 3).unwrap(),
+);
+// => [
+//   Holiday { date: 2017-01-01, name: "元日" },
+//   Holiday { date: 2017-01-02, name: "元日 振替休日" },
+//   ...
+//   Holiday { date: 2017-05-03, name: "憲法記念日" },
+// ]
+```
+
+### 独自の休日を追加
 
 ```rust
 use jpholiday::{Date, JPHoliday, OriginalHolidayChecker};
 
-struct CompanyHoliday;
+struct TestHoliday;
 
-impl OriginalHolidayChecker for CompanyHoliday {
+impl OriginalHolidayChecker for TestHoliday {
     fn is_holiday(&self, date: Date) -> bool {
         date == Date::new(2020, 2, 9).unwrap()
     }
@@ -108,59 +122,186 @@ impl OriginalHolidayChecker for CompanyHoliday {
     }
 }
 
-let mut jp = JPHoliday::new();
-jp.register(CompanyHoliday);
-assert!(jp.is_holiday(Date::new(2020, 2, 9).unwrap()));
+let mut jpholiday = JPHoliday::new();
+jpholiday.register(TestHoliday);
 
-// 登録解除は型パラメータで指定 / Unregister by type parameter
-jp.unregister::<CompanyHoliday>();
-assert!(!jp.is_holiday(Date::new(2020, 2, 9).unwrap()));
+jpholiday.holidays(Date::new(2020, 2, 9).unwrap());
+// => [Holiday { date: 2020-02-09, name: "特別休暇" }]
+
+jpholiday.is_holiday(Date::new(2020, 2, 9).unwrap());
+// => true
 ```
 
-グローバル関数版の `jpholiday::register` / `jpholiday::unregister` も利用できます。
+### 独自の休日を削除
 
-## 🔁 Python 版との違い / Differences from the Python version
+```rust
+use jpholiday::{Date, JPHoliday, OriginalHolidayChecker};
 
-| 項目 | Python | Rust |
-|---|---|---|
-| 日付型 | `datetime.date` / `datetime.datetime` | 内蔵の `jpholiday::Date`（依存ゼロ） |
-| 型エラー | 実行時に `JPHolidayTypeError` | 型システムでコンパイル時に排除 |
-| 無効な日付 | 例外 | `Date::new` が `Result<Date, DateError>` |
-| `unregister` | インスタンスを渡す | 型パラメータ `unregister::<T>()` |
-| `year_holidays` 等（関数 API） | `list[tuple[date, str]]` | `Vec<(Date, String)>` |
-| `holidays` / クラス API | `list[Holiday]` | `Vec<Holiday>` |
-| スレッド安全性 | 実質シングルスレッド | 関数 API は `Mutex` で保護（スレッド安全） |
+struct TestHoliday;
 
-`datetime.datetime`（時刻付き）は本ライブラリには存在しません。時刻が不要なため、すべて `Date` で扱います。
+impl OriginalHolidayChecker for TestHoliday {
+    fn is_holiday(&self, date: Date) -> bool {
+        date == Date::new(2020, 2, 9).unwrap()
+    }
+    fn holiday_name(&self, _date: Date) -> String {
+        "特別休暇".to_string()
+    }
+}
 
-### 施行日境界（本家より厳密）/ Enforcement-date boundary (stricter than upstream)
+let mut jpholiday = JPHoliday::new();
+jpholiday.register(TestHoliday);
 
-本家 Python 版は祝日法（昭和23年法律第178号）の**施行日（1948-07-20）を無視**し、施行前の年や日付でも
-一部の祝日（元日・憲法記念日・文化の日など）を返します。本移植では祝日法に忠実に、**1948-07-20 より前の
-日付には国民の祝日を一切返しません**（例: 1947 年は祝日 0 件、1948 年は施行日以降の 秋分の日・文化の日・
-勤労感謝の日 の 3 件のみ）。これは本家からの意図的な相違です。なお、利用者が登録する**独自祝日はこの境界の
-対象外**で、施行日より前でも有効です。
+// 登録解除は型パラメータで指定
+jpholiday.unregister::<TestHoliday>();
 
-Unlike the upstream Python library, this port respects the enforcement date of the National Holidays Act
-(1948-07-20): no public holiday is reported before that date. Custom holidays are exempt from this boundary.
+jpholiday.holidays(Date::new(2020, 2, 9).unwrap());
+// => []
 
-## 📜 対応する祝日 / Supported holidays
-
-元日・成人の日・建国記念の日・天皇誕生日・春分の日・みどりの日・昭和の日・憲法記念日・
-こどもの日・海の日・山の日・敬老の日・秋分の日・体育の日・スポーツの日・文化の日・勤労感謝の日、
-および振替休日・国民の休日。さらに皇室慶弔行事に伴う特別な祝日（1959/1989/1990/1993/2019）と、
-2020/2021 年の五輪特例も再現します。すべて祝日法の施行日（1948-07-20）以降が対象です。
-
-## 🧪 開発 / Development
-
-```bash
-cargo test            # 全テスト（ユニット + ドキュメント + ゴールデン統合テスト）
-cargo clippy --all-targets -- -D warnings
-cargo fmt --check
-cargo run --example basic
+jpholiday.is_holiday(Date::new(2020, 2, 9).unwrap());
+// => false
 ```
 
-## 📄 ライセンス / License
+## Functions
 
-MIT License. 本家 Python 版 [jpholiday](https://github.com/Lalcs/jpholiday)（MIT）に基づきます。
-詳細は [LICENSE](./LICENSE) を参照してください。
+### 指定日の祝日名を取得
+
+```rust
+use jpholiday::Date;
+
+jpholiday::is_holiday_name(Date::new(2017, 1, 1).unwrap());
+// => Some("元日")
+jpholiday::is_holiday_name(Date::new(2017, 1, 2).unwrap());
+// => Some("元日 振替休日")
+jpholiday::is_holiday_name(Date::new(2017, 1, 3).unwrap());
+// => None
+```
+
+### 指定日が祝日か判定
+
+```rust
+use jpholiday::Date;
+
+jpholiday::is_holiday(Date::new(2017, 1, 1).unwrap());
+// => true
+jpholiday::is_holiday(Date::new(2017, 1, 2).unwrap());
+// => true
+jpholiday::is_holiday(Date::new(2017, 1, 3).unwrap());
+// => false
+```
+
+### 指定年の祝日を取得
+
+```rust
+use jpholiday::Date;
+
+jpholiday::year_holidays(2017);
+// => [
+//   (2017-01-01, "元日"),
+//   (2017-01-02, "元日 振替休日"),
+//   (2017-01-09, "成人の日"),
+//   (2017-02-11, "建国記念の日"),
+//   (2017-03-20, "春分の日"),
+//   (2017-04-29, "昭和の日"),
+//   (2017-05-03, "憲法記念日"),
+//   (2017-05-04, "みどりの日"),
+//   (2017-05-05, "こどもの日"),
+//   (2017-07-17, "海の日"),
+//   (2017-08-11, "山の日"),
+//   (2017-09-18, "敬老の日"),
+//   (2017-09-23, "秋分の日"),
+//   (2017-10-09, "体育の日"),
+//   (2017-11-03, "文化の日"),
+//   (2017-11-23, "勤労感謝の日"),
+//   (2017-12-23, "天皇誕生日"),
+// ]
+```
+
+### 指定月の祝日を取得
+
+```rust
+use jpholiday::Date;
+
+jpholiday::month_holidays(2017, 5);
+// => [
+//   (2017-05-03, "憲法記念日"),
+//   (2017-05-04, "みどりの日"),
+//   (2017-05-05, "こどもの日"),
+// ]
+```
+
+### 指定範囲の祝日を取得
+
+```rust
+use jpholiday::Date;
+
+jpholiday::between(
+    Date::new(2017, 1, 1).unwrap(),
+    Date::new(2017, 5, 3).unwrap(),
+);
+// => [
+//   (2017-01-01, "元日"),
+//   (2017-01-02, "元日 振替休日"),
+//   (2017-01-09, "成人の日"),
+//   (2017-02-11, "建国記念の日"),
+//   (2017-03-20, "春分の日"),
+//   (2017-04-29, "昭和の日"),
+//   (2017-05-03, "憲法記念日"),
+// ]
+```
+
+### 独自の休日を追加
+
+```rust
+use jpholiday::{Date, OriginalHolidayChecker};
+
+struct TestHoliday;
+
+impl OriginalHolidayChecker for TestHoliday {
+    fn is_holiday(&self, date: Date) -> bool {
+        date == Date::new(2020, 2, 9).unwrap()
+    }
+    fn holiday_name(&self, _date: Date) -> String {
+        "特別休暇".to_string()
+    }
+}
+
+jpholiday::register(TestHoliday);
+
+jpholiday::is_holiday_name(Date::new(2020, 2, 9).unwrap());
+// => Some("特別休暇")
+
+jpholiday::is_holiday(Date::new(2020, 2, 9).unwrap());
+// => true
+```
+
+### 独自の休日を削除
+
+```rust
+use jpholiday::{Date, OriginalHolidayChecker};
+
+struct TestHoliday;
+
+impl OriginalHolidayChecker for TestHoliday {
+    fn is_holiday(&self, date: Date) -> bool {
+        date == Date::new(2020, 2, 9).unwrap()
+    }
+    fn holiday_name(&self, _date: Date) -> String {
+        "特別休暇".to_string()
+    }
+}
+
+jpholiday::register(TestHoliday);
+
+// 登録解除は型パラメータで指定
+jpholiday::unregister::<TestHoliday>();
+
+jpholiday::is_holiday_name(Date::new(2020, 2, 9).unwrap());
+// => None
+
+jpholiday::is_holiday(Date::new(2020, 2, 9).unwrap());
+// => false
+```
+
+## License
+
+MIT License. 詳細は [LICENSE](./LICENSE) を参照してください。

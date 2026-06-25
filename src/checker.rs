@@ -1,7 +1,6 @@
 //! 祝日チェッカー群。
 //!
 //! 組込みの祝日（祝日法の年代別ロジック）、振替休日、国民の休日の判定を行います。
-//! 本家 Python 版の `jpholiday/checker/` を忠実に移植したものです。
 
 use crate::astronomy;
 use crate::date::{Date, days_in_month};
@@ -12,14 +11,14 @@ use std::sync::Arc;
 /// 祝日法（昭和23年法律第178号）の施行日 `(年, 月, 日)` = 1948-07-20。
 ///
 /// この日より前には国民の祝日は法的に存在しないため、組込みの祝日（および振替休日・国民の休日）は
-/// すべて施行日以降のみ有効とする。本家 Python 版はこの施行日境界を無視して施行前の年・日付でも
-/// 一部の祝日を返すが、本移植では祝日法に忠実に施行日で区切る（利用者の独自祝日には影響しない）。
+/// すべて施行日以降のみ有効とする。祝日法に忠実に施行日で区切り、施行日より前の年・日付には
+/// 国民の祝日を返さない（利用者の独自祝日には影響しない）。
 const NATIONAL_HOLIDAY_ACT_ENFORCEMENT: (i32, u32, u32) = (1948, 7, 20);
 
 /// 利用者が独自の祝日を定義するためのトレイト。
 ///
-/// 本家 Python 版の `OriginalHolidayCheckerInterface` に対応します。実装した型を
-/// [`crate::JPHoliday::register`] や [`crate::register`] で登録すると、判定に加わります。
+/// 実装した型を [`crate::JPHoliday::register`] や [`crate::register`] で登録すると、
+/// 判定に加わります。
 ///
 /// # Examples
 /// ```
@@ -53,8 +52,6 @@ pub(crate) struct OriginalEntry {
 }
 
 /// 「その月の第 `nth` 週の ISO 曜日 `iso_weekday`」に当たる日を返します。
-///
-/// 本家 Python 版の `utils._week_day(date, week, weekday).day` に対応します。
 pub(crate) fn nth_weekday_day(year: i32, month: u32, nth: u32, iso_weekday: u32) -> Option<u32> {
     if !(1..=5).contains(&nth) || !(1..=7).contains(&iso_weekday) {
         return None;
@@ -62,12 +59,12 @@ pub(crate) fn nth_weekday_day(year: i32, month: u32, nth: u32, iso_weekday: u32)
     let dim = days_in_month(year, month)?;
     let mut count = 0;
     for day in 1..=dim {
-        if let Ok(date) = Date::new(year, month, day) {
-            if date.iso_weekday() == iso_weekday {
-                count += 1;
-                if count == nth {
-                    return Some(day);
-                }
+        if let Ok(date) = Date::new(year, month, day)
+            && date.iso_weekday() == iso_weekday
+        {
+            count += 1;
+            if count == nth {
+                return Some(day);
             }
         }
     }
@@ -126,7 +123,7 @@ pub(crate) enum Builtin {
 }
 
 impl Builtin {
-    /// 既定のレジストリ順（本家 Python 版の登録順）。
+    /// 既定のレジストリ順。
     pub(crate) const ALL: [Builtin; 23] = [
         Builtin::NewYear,
         Builtin::AdultDay,
@@ -353,8 +350,7 @@ fn first_builtin_on(date: Date, all: &[Checker]) -> Option<Builtin> {
 
 /// 振替休日の名称を返します（該当しなければ `None`）。
 ///
-/// 本家 `TransferHolidayChecker.__transfer_holiday_name` の移植。組込み祝日のみを対象とし、
-/// 振替休日・国民の休日・独自祝日は対象から除外します。
+/// 組込み祝日のみを対象とし、振替休日・国民の休日・独自祝日は対象から除外します。
 pub(crate) fn transfer_name(date: Date, all: &[Checker]) -> Option<String> {
     // 1973 年（昭和48年）4 月 12 日 改正・施行。
     if date.year() < 1973 {
@@ -385,8 +381,7 @@ pub(crate) fn transfer_name(date: Date, all: &[Checker]) -> Option<String> {
 
 /// 国民の休日（祝日に挟まれた平日）かどうかを返します。
 ///
-/// 本家 `NationalHolidayChecker` の移植。国民の休日・独自祝日は対象から除外し、
-/// 組込み祝日と振替休日を対象とします。
+/// 国民の休日・独自祝日は対象から除外し、組込み祝日と振替休日を対象とします。
 pub(crate) fn national_holiday(date: Date, all: &[Checker]) -> bool {
     if date.iso_weekday() == 7 {
         return false;

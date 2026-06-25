@@ -1,4 +1,4 @@
-//! 本家 `test_class.py` の移植。`JPHoliday` インスタンス API を検証する。
+//! `JPHoliday` インスタンス API を検証する。
 
 use jpholiday::{Date, Holiday, JPHoliday};
 

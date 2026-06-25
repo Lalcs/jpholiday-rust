@@ -1,7 +1,7 @@
 //! 祝日チェッカーのレジストリ。
 //!
-//! 本家 Python 版の `HolidayCheckerRegistry` に対応します。組込み祝日を既定順で保持し、
-//! 末尾に振替休日・国民の休日を置きます。独自祝日は型単位で重複排除しつつ末尾に追加します。
+//! 組込み祝日を既定順で保持し、末尾に振替休日・国民の休日を置きます。
+//! 独自祝日は型単位で重複排除しつつ末尾に追加します。
 
 use crate::checker::{Builtin, Checker, OriginalEntry, OriginalHolidayChecker};
 use std::any::TypeId;

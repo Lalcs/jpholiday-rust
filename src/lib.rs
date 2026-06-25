@@ -1,7 +1,6 @@
 //! # jpholiday
 //!
-//! 日本の祝日を判定する依存ゼロの Rust ライブラリです。Python 製
-//! [jpholiday](https://github.com/Lalcs/jpholiday) を忠実に移植したもので、
+//! 日本の祝日を判定する依存ゼロの Rust ライブラリです。
 //! [内閣府が公表しているデータ](https://www8.cao.go.jp/chosei/shukujitsu/gaiyou.html)
 //! に基づき、振替休日・国民の休日・春分/秋分の日（天文計算）まで再現します。
 //!
@@ -84,8 +83,8 @@ use std::sync::{Mutex, MutexGuard, OnceLock, PoisonError};
 
 /// 関数 API が共有するグローバルなチェッカーレジストリ。
 ///
-/// 本家 Python 版のモジュールレベル singleton (`new_api`) に対応します。スレッド安全性のため
-/// [`Mutex`] で保護しており、[`register`]/[`unregister`] による登録状態は全関数で共有されます。
+/// スレッド安全性のため [`Mutex`] で保護しており、[`register`]/[`unregister`] による
+/// 登録状態は全関数で共有されます。
 ///
 /// グローバル状態として保持するのは「レジストリ（チェッカーの並び）」のみで、祝日計算の結果は
 /// キャッシュしません。これにより、範囲問い合わせ（[`between`] 等）でプロセス寿命のキャッシュが
@@ -182,8 +181,7 @@ pub fn register<C: OriginalHolidayChecker + 'static>(checker: C) {
 
 /// 指定型の独自祝日チェッカーをグローバル API から登録解除します。
 ///
-/// 本家はインスタンスを渡しますが、Rust では型パラメータで指定します
-/// （例: `jpholiday::unregister::<MyHoliday>()`）。
+/// 登録解除は型パラメータで指定します（例: `jpholiday::unregister::<MyHoliday>()`）。
 pub fn unregister<C: OriginalHolidayChecker + 'static>() {
     locked().unregister::<C>();
 }
