@@ -133,12 +133,23 @@ assert!(!jp.is_holiday(Date::new(2020, 2, 9).unwrap()));
 
 `datetime.datetime`（時刻付き）は本ライブラリには存在しません。時刻が不要なため、すべて `Date` で扱います。
 
+### 施行日境界（本家より厳密）/ Enforcement-date boundary (stricter than upstream)
+
+本家 Python 版は祝日法（昭和23年法律第178号）の**施行日（1948-07-20）を無視**し、施行前の年や日付でも
+一部の祝日（元日・憲法記念日・文化の日など）を返します。本移植では祝日法に忠実に、**1948-07-20 より前の
+日付には国民の祝日を一切返しません**（例: 1947 年は祝日 0 件、1948 年は施行日以降の 秋分の日・文化の日・
+勤労感謝の日 の 3 件のみ）。これは本家からの意図的な相違です。なお、利用者が登録する**独自祝日はこの境界の
+対象外**で、施行日より前でも有効です。
+
+Unlike the upstream Python library, this port respects the enforcement date of the National Holidays Act
+(1948-07-20): no public holiday is reported before that date. Custom holidays are exempt from this boundary.
+
 ## 📜 対応する祝日 / Supported holidays
 
 元日・成人の日・建国記念の日・天皇誕生日・春分の日・みどりの日・昭和の日・憲法記念日・
 こどもの日・海の日・山の日・敬老の日・秋分の日・体育の日・スポーツの日・文化の日・勤労感謝の日、
 および振替休日・国民の休日。さらに皇室慶弔行事に伴う特別な祝日（1959/1989/1990/1993/2019）と、
-2020/2021 年の五輪特例も再現します。
+2020/2021 年の五輪特例も再現します。すべて祝日法の施行日（1948-07-20）以降が対象です。
 
 ## 🧪 開発 / Development
 

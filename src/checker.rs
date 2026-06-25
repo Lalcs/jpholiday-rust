@@ -9,6 +9,13 @@ use crate::model::Holiday;
 use std::any::TypeId;
 use std::sync::Arc;
 
+/// 祝日法（昭和23年法律第178号）の施行日 `(年, 月, 日)` = 1948-07-20。
+///
+/// この日より前には国民の祝日は法的に存在しないため、組込みの祝日（および振替休日・国民の休日）は
+/// すべて施行日以降のみ有効とする。本家 Python 版はこの施行日境界を無視して施行前の年・日付でも
+/// 一部の祝日を返すが、本移植では祝日法に忠実に施行日で区切る（利用者の独自祝日には影響しない）。
+const NATIONAL_HOLIDAY_ACT_ENFORCEMENT: (i32, u32, u32) = (1948, 7, 20);
+
 /// 利用者が独自の祝日を定義するためのトレイト。
 ///
 /// 本家 Python 版の `OriginalHolidayCheckerInterface` に対応します。実装した型を
@@ -149,6 +156,13 @@ impl Builtin {
     /// 指定日がこの祝日に当たるかを返します。
     pub(crate) fn is_holiday(self, date: Date) -> bool {
         let (y, m, d) = (date.year(), date.month(), date.day());
+
+        // 祝日法の施行日（1948-07-20）より前に国民の祝日は存在しない。
+        // この境界判定により、振替休日・国民の休日の遡及参照も含めて一律に施行日で区切られる。
+        if (y, m, d) < NATIONAL_HOLIDAY_ACT_ENFORCEMENT {
+            return false;
+        }
+
         match self {
             Builtin::NewYear => m == 1 && d == 1,
 
