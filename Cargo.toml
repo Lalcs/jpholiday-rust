@@ -13,6 +13,8 @@ documentation = "https://docs.rs/jpholiday"
 keywords = ["japan", "holiday", "japanese", "calendar", "shukujitsu"]
 categories = ["date-and-time", "localization"]
 authors = ["Kazuki Hayashi"]
+# README 用の画像はクレートに同梱しない（crates.io は repository の raw URL で画像を解決する）。
+exclude = ["docs/"]
 
 [dependencies]
 
