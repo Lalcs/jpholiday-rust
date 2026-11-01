@@ -15,6 +15,24 @@ use std::sync::Arc;
 /// 国民の祝日を返さない（利用者の独自祝日には影響しない）。
 const NATIONAL_HOLIDAY_ACT_ENFORCEMENT: (i32, u32, u32) = (1948, 7, 20);
 
+/// 振替休日を定めた改正祝日法の施行日 `(年, 月, 日)` = 1973-04-12（昭和48年）。
+///
+/// この日より前の日付には振替休日を返さない（例: 1973-02-11 は日曜日の建国記念の日だが、
+/// 施行前なので 1973-02-12 は休日ではない）。内閣府公表データでも最初の振替休日は 1973-04-30。
+const TRANSFER_HOLIDAY_ENFORCEMENT: (i32, u32, u32) = (1973, 4, 12);
+
+/// 国民の休日（祝日に挟まれた日）を定めた改正祝日法の施行日 `(年, 月, 日)` = 1985-12-27（昭和60年）。
+///
+/// この日より前の日付には国民の休日を返さない（例: 1971-05-04 は憲法記念日とこどもの日に
+/// 挟まれているが休日ではない）。内閣府公表データでも最初の国民の休日は 1988-05-04。
+const NATIONAL_HOLIDAY_ENFORCEMENT: (i32, u32, u32) = (1985, 12, 27);
+
+/// 日付を `(年, 月, 日)` のタプルへ変換します（施行日定数との比較用）。
+#[inline]
+fn ymd(date: Date) -> (i32, u32, u32) {
+    (date.year(), date.month(), date.day())
+}
+
 /// 利用者が独自の祝日を定義するためのトレイト。
 ///
 /// 実装した型を [`crate::JPHoliday::register`] や [`crate::register`] で登録すると、
@@ -152,7 +170,7 @@ impl Builtin {
 
     /// 指定日がこの祝日に当たるかを返します。
     pub(crate) fn is_holiday(self, date: Date) -> bool {
-        let (y, m, d) = (date.year(), date.month(), date.day());
+        let (y, m, d) = ymd(date);
 
         // 祝日法の施行日（1948-07-20）より前に国民の祝日は存在しない。
         // この境界判定により、振替休日・国民の休日の遡及参照も含めて一律に施行日で区切られる。
@@ -352,8 +370,8 @@ fn first_builtin_on(date: Date, all: &[Checker]) -> Option<Builtin> {
 ///
 /// 組込み祝日のみを対象とし、振替休日・国民の休日・独自祝日は対象から除外します。
 pub(crate) fn transfer_name(date: Date, all: &[Checker]) -> Option<String> {
-    // 1973 年（昭和48年）4 月 12 日 改正・施行。
-    if date.year() < 1973 {
+    // 1973 年（昭和48年）4 月 12 日 改正・施行。年だけでなく月日まで比較する。
+    if ymd(date) < TRANSFER_HOLIDAY_ENFORCEMENT {
         return None;
     }
     // 日曜日に振替休日は存在しない。
@@ -379,6 +397,10 @@ pub(crate) fn transfer_name(date: Date, all: &[Checker]) -> Option<String> {
 ///
 /// 国民の休日・独自祝日は対象から除外し、組込み祝日と振替休日を対象とします。
 pub(crate) fn national_holiday(date: Date, all: &[Checker]) -> bool {
+    // 1985 年（昭和60年）12 月 27 日 改正・施行。
+    if ymd(date) < NATIONAL_HOLIDAY_ENFORCEMENT {
+        return false;
+    }
     if date.iso_weekday() == 7 {
         return false;
     }

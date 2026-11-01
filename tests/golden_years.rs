@@ -2,6 +2,9 @@
 //!
 //! 各年の全祝日を 3 種類の規則的な検査（祝日名・月別件数・年別件数）で網羅的に固定した
 //! ゴールデンデータであり、手で編集しないこと。
+//!
+//! 例外: 1971 年の 5/4（旧データでは「国民の休日」）は、内閣府公表データ（syukujitsu.csv）に
+//! 存在しないため、国民の休日の施行日（1985-12-27）の修正に合わせて公表データどおりに改めた。
 
 use jpholiday::Date;
 
@@ -36,10 +39,8 @@ fn golden_year_1971() {
         jpholiday::is_holiday_name(d(1971, 5, 3)).as_deref(),
         Some("憲法記念日")
     );
-    assert_eq!(
-        jpholiday::is_holiday_name(d(1971, 5, 4)).as_deref(),
-        Some("国民の休日")
-    );
+    // 国民の休日は 1985-12-27 施行のため、1971-05-04 は休日ではない（内閣府公表データどおり）。
+    assert_eq!(jpholiday::is_holiday_name(d(1971, 5, 4)), None);
     assert_eq!(
         jpholiday::is_holiday_name(d(1971, 5, 5)).as_deref(),
         Some("こどもの日")
@@ -68,7 +69,7 @@ fn golden_year_1971() {
     assert_eq!(jpholiday::month_holidays(1971, 2).len(), 1);
     assert_eq!(jpholiday::month_holidays(1971, 3).len(), 1);
     assert_eq!(jpholiday::month_holidays(1971, 4).len(), 1);
-    assert_eq!(jpholiday::month_holidays(1971, 5).len(), 3);
+    assert_eq!(jpholiday::month_holidays(1971, 5).len(), 2);
     assert_eq!(jpholiday::month_holidays(1971, 6).len(), 0);
     assert_eq!(jpholiday::month_holidays(1971, 7).len(), 0);
     assert_eq!(jpholiday::month_holidays(1971, 8).len(), 0);
@@ -76,7 +77,7 @@ fn golden_year_1971() {
     assert_eq!(jpholiday::month_holidays(1971, 10).len(), 1);
     assert_eq!(jpholiday::month_holidays(1971, 11).len(), 2);
     assert_eq!(jpholiday::month_holidays(1971, 12).len(), 0);
-    assert_eq!(jpholiday::year_holidays(1971).len(), 13);
+    assert_eq!(jpholiday::year_holidays(1971).len(), 12);
 }
 
 #[test]
