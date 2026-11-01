@@ -78,6 +78,7 @@ pub use jpholiday::JPHoliday;
 pub use model::Holiday;
 
 use crate::checker::{Checker, compute_holidays};
+use crate::date::{days_inclusive, month_bounds, year_bounds};
 use crate::registry::HolidayCheckerRegistry;
 use std::sync::{Mutex, MutexGuard, OnceLock, PoisonError};
 
@@ -127,49 +128,33 @@ pub fn is_holiday_name(date: Date) -> Option<String> {
     holidays(date).into_iter().next().map(|h| h.name)
 }
 
+/// `checkers` で `start`〜`end`（両端を含む）の祝日を `(日付, 名称)` のタプルで収集します。
+fn collect_between(checkers: &[Checker], start: Date, end: Date) -> Vec<(Date, String)> {
+    days_inclusive(start, end)
+        .flat_map(|date| compute_holidays(checkers, date))
+        .map(Holiday::into_tuple)
+        .collect()
+}
+
 /// その年のすべての祝日を `(日付, 名称)` のタプルで返します。
 pub fn year_holidays(year: i32) -> Vec<(Date, String)> {
-    let checkers = snapshot();
-    let mut out = Vec::new();
-    let mut date = Date::new(year, 1, 1).expect("January 1st is always a valid date");
-    while date.year() == year {
-        for holiday in compute_holidays(&checkers, date) {
-            out.push(holiday.into_tuple());
-        }
-        date = date.succ();
-    }
-    out
+    let (start, end) = year_bounds(year);
+    collect_between(&snapshot(), start, end)
 }
 
 /// その月のすべての祝日を `(日付, 名称)` のタプルで返します。`month` が範囲外なら空を返します。
 pub fn month_holidays(year: i32, month: u32) -> Vec<(Date, String)> {
-    let checkers = snapshot();
-    let mut out = Vec::new();
-    let mut date = match Date::new(year, month, 1) {
-        Ok(d) => d,
-        Err(_) => return out,
-    };
-    while date.month() == month {
-        for holiday in compute_holidays(&checkers, date) {
-            out.push(holiday.into_tuple());
-        }
-        date = date.succ();
+    match month_bounds(year, month) {
+        Some((start, end)) => collect_between(&snapshot(), start, end),
+        None => Vec::new(),
     }
-    out
 }
 
 /// 指定範囲（両端を含む）のすべての祝日を `(日付, 名称)` のタプルで返します。
+///
+/// `start > end` の場合は空を返します。
 pub fn between(start: Date, end: Date) -> Vec<(Date, String)> {
-    let checkers = snapshot();
-    let mut out = Vec::new();
-    let mut current = start;
-    while current <= end {
-        for holiday in compute_holidays(&checkers, current) {
-            out.push(holiday.into_tuple());
-        }
-        current = current.succ();
-    }
-    out
+    collect_between(&snapshot(), start, end)
 }
 
 /// 独自の祝日チェッカーをグローバル API に登録します。

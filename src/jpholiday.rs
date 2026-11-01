@@ -1,7 +1,7 @@
 //! 祝日判定の中核となる [`JPHoliday`] 型。
 
 use crate::checker::{OriginalHolidayChecker, compute_holidays};
-use crate::date::Date;
+use crate::date::{Date, days_inclusive, month_bounds, year_bounds};
 use crate::model::Holiday;
 use crate::registry::HolidayCheckerRegistry;
 use std::cell::RefCell;
@@ -62,38 +62,25 @@ impl JPHoliday {
 
     /// その年のすべての祝日を返します。
     pub fn year_holidays(&self, year: i32) -> Vec<Holiday> {
-        let mut out = Vec::new();
-        let mut date = Date::new(year, 1, 1).expect("January 1st is always a valid date");
-        while date.year() == year {
-            out.extend(self.holidays(date));
-            date = date.succ();
-        }
-        out
+        let (start, end) = year_bounds(year);
+        self.between(start, end)
     }
 
     /// その月のすべての祝日を返します。`month` が範囲外なら空を返します。
     pub fn month_holidays(&self, year: i32, month: u32) -> Vec<Holiday> {
-        let mut out = Vec::new();
-        let mut date = match Date::new(year, month, 1) {
-            Ok(d) => d,
-            Err(_) => return out,
-        };
-        while date.month() == month {
-            out.extend(self.holidays(date));
-            date = date.succ();
+        match month_bounds(year, month) {
+            Some((start, end)) => self.between(start, end),
+            None => Vec::new(),
         }
-        out
     }
 
     /// 指定範囲（両端を含む）のすべての祝日を返します。
+    ///
+    /// `start > end` の場合は空を返します。
     pub fn between(&self, start: Date, end: Date) -> Vec<Holiday> {
-        let mut out = Vec::new();
-        let mut current = start;
-        while current <= end {
-            out.extend(self.holidays(current));
-            current = current.succ();
-        }
-        out
+        days_inclusive(start, end)
+            .flat_map(|date| self.holidays(date))
+            .collect()
     }
 
     /// 独自の祝日チェッカーを登録します。
