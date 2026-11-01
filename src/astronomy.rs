@@ -5,6 +5,7 @@
 //!
 //! - 精度: 1948〜3000 年で ±1 日
 //! - 対応範囲: 1948 年以降（1948 年より前は 0 を返す）
+//! - 計算が破綻する極端な年（結果が想定月の有効な日付にならない年）も、panic せず 0 を返す
 
 use crate::date::Date;
 
@@ -213,23 +214,29 @@ pub fn julian_day_to_datetime(jd: f64) -> JulianDateTime {
 /// UTC の分点日時を日本標準時 (UTC+9) に直したときの「日」を返します。
 ///
 /// 9 時間加算で時が 24 を超えた場合のみ翌日へ繰り上げます（分・秒は繰り上げに影響しない）。
+///
+/// 計算が破綻する極端な年（浮動小数点の精度不足で実在しない日付になる、または近似式の適用範囲を
+/// 大きく外れて分点が想定外の月に出る）では、panic せずに 0（該当日なし）を返します。祝日判定は
+/// 任意の [`Date`] を受け付けるため、ここで panic すると利用者の入力次第で判定処理が落ちてしまう。
 fn jst_day(utc: JulianDateTime, expected_month: u32) -> u32 {
-    let base = Date::new(utc.year, utc.month, utc.day)
-        .expect("equinox calculation produced an invalid calendar date");
+    let Ok(base) = Date::new(utc.year, utc.month, utc.day) else {
+        return 0;
+    };
     let jst = if utc.hour + 9 >= 24 {
-        base.succ()
+        match base.checked_succ() {
+            Some(next) => next,
+            None => return 0,
+        }
     } else {
         base
     };
-    debug_assert_eq!(
-        jst.month(),
-        expected_month,
-        "equinox resolved to an unexpected month"
-    );
+    if jst.month() != expected_month {
+        return 0;
+    }
     jst.day()
 }
 
-/// 春分の日（3 月）の日を返します。1948 年より前は 0。
+/// 春分の日（3 月）の日を返します。1948 年より前、または計算が破綻する極端な年は 0。
 pub fn calculate_vernal_equinox(year: i32) -> u32 {
     if year < 1948 {
         return 0;
@@ -238,7 +245,7 @@ pub fn calculate_vernal_equinox(year: i32) -> u32 {
     jst_day(julian_day_to_datetime(jd), 3)
 }
 
-/// 秋分の日（9 月）の日を返します。1948 年より前は 0。
+/// 秋分の日（9 月）の日を返します。1948 年より前、または計算が破綻する極端な年は 0。
 pub fn calculate_autumn_equinox(year: i32) -> u32 {
     if year < 1948 {
         return 0;

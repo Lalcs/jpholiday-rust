@@ -233,3 +233,46 @@ fn solar_ecliptic_longitude_approximate_values() {
         assert!(diff < 5.0, "longitude {lon} not within 5° of {expected}");
     }
 }
+
+#[test]
+fn extreme_years_do_not_panic() {
+    // 以前は debug ビルドで 22856 年以降（debug_assert）、release ビルドでも約 15 億年以降の一部の年
+    // （expect）で panic し、3 月・9 月の日付を `is_holiday` に渡すだけで判定処理が落ちていた。
+    // 計算が破綻する年は 0（該当日なし）を返し、それ以外は実在する日（1〜31）を返す。
+    let mut years: Vec<i32> = vec![
+        22_856,
+        50_000,
+        100_000,
+        1_510_998_641,
+        i32::MAX - 1,
+        i32::MAX,
+    ];
+    years.extend((3_000..=1_000_000).step_by(997));
+    years.extend((1_000_000..=i32::MAX).step_by(99_999_989));
+    for year in years {
+        for day in [
+            astronomy::calculate_vernal_equinox(year),
+            astronomy::calculate_autumn_equinox(year),
+        ] {
+            assert!(day <= 31, "year {year}: day {day}");
+        }
+    }
+
+    // i32::MAX 年では計算が破綻する（以前は expect で panic していた）。
+    assert_eq!(astronomy::calculate_vernal_equinox(i32::MAX), 0);
+    assert_eq!(astronomy::calculate_autumn_equinox(i32::MAX), 0);
+}
+
+#[test]
+fn holiday_queries_on_extreme_years_do_not_panic() {
+    for year in [22_856, 50_000, 100_000, 1_510_998_641, i32::MAX] {
+        // 分点の計算は 3 月・9 月の日付で行われ、振替休日・国民の休日の判定で前後の日も参照される。
+        let _ = jpholiday::month_holidays(year, 3);
+        let _ = jpholiday::month_holidays(year, 9);
+        let _ = jpholiday::is_holiday(jpholiday::Date::new(year, 3, 20).unwrap());
+        let _ = jpholiday::JPHoliday::new().month_holidays(year, 9);
+    }
+    // 年全体の問い合わせも panic せずに終わる（最大の年は末尾で巻き戻らずに止まる）。
+    let _ = jpholiday::year_holidays(i32::MAX);
+    let _ = jpholiday::JPHoliday::new().year_holidays(i32::MAX);
+}
