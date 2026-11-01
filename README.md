@@ -4,7 +4,7 @@
 [![docs.rs](https://docs.rs/jpholiday/badge.svg)](https://docs.rs/jpholiday)
 [![License: MIT](https://img.shields.io/crates/l/jpholiday.svg)](./LICENSE)
 [![CI](https://github.com/Lalcs/jpholiday-rust/actions/workflows/ci.yml/badge.svg)](https://github.com/Lalcs/jpholiday-rust/actions/workflows/ci.yml)
-[![Python版](https://img.shields.io/badge/Python%E7%89%88-jpholiday-3776AB?logo=python&logoColor=white)](https://github.com/Lalcs/jpholiday)
+[![Python](https://img.shields.io/badge/Python-jpholiday-3776AB?logo=python&logoColor=white)](https://github.com/Lalcs/jpholiday)
 
 ![JPHoliday](./docs/images/logo.png)
 
