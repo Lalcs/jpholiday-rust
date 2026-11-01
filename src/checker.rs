@@ -367,13 +367,9 @@ pub(crate) fn transfer_name(date: Date, all: &[Checker]) -> Option<String> {
 
     let mut current = date.pred();
     loop {
-        match first_builtin_on(current, all) {
-            None => return None,
-            Some(b) => {
-                if current.iso_weekday() == 7 {
-                    return Some(format!("{} 振替休日", b.name()));
-                }
-            }
+        let b = first_builtin_on(current, all)?;
+        if current.iso_weekday() == 7 {
+            return Some(format!("{} 振替休日", b.name()));
         }
         current = current.pred();
     }
