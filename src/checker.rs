@@ -417,7 +417,8 @@ pub(crate) fn national_holiday(date: Date, all: &[Checker]) -> bool {
         return false;
     }
 
-    is_hol(date.pred()) && is_hol(date.succ())
+    // 表現可能な範囲の端では隣接日が存在しないため、祝日に挟まれていないものとして扱う。
+    date.checked_pred().is_some_and(is_hol) && date.checked_succ().is_some_and(is_hol)
 }
 
 #[cfg(test)]

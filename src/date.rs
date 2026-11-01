@@ -41,20 +41,26 @@ pub const fn days_in_month(year: i32, month: u32) -> Option<u32> {
 
 /// `year` より前（1 年 1 月 1 日からの起点）に存在する日数。
 #[inline]
-fn days_before_year(year: i32) -> i64 {
+const fn days_before_year(year: i32) -> i64 {
     let y = year as i64 - 1;
     y * 365 + y.div_euclid(4) - y.div_euclid(100) + y.div_euclid(400)
 }
 
 /// その年における `month` より前の日数（閏年を考慮）。
 #[inline]
-fn days_before_month(year: i32, month: u32) -> i64 {
+const fn days_before_month(year: i32, month: u32) -> i64 {
     let mut days = DAYS_BEFORE_MONTH[month as usize];
     if month > 2 && is_leap_year(year) {
         days += 1;
     }
     days
 }
+
+/// [`Date`] が表現できる最小の日付（`i32::MIN` 年 1 月 1 日）の序数。
+const MIN_ORDINAL: i64 = days_before_year(i32::MIN) + 1;
+
+/// [`Date`] が表現できる最大の日付（`i32::MAX` 年 12 月 31 日）の序数。
+const MAX_ORDINAL: i64 = days_before_year(i32::MAX) + days_before_month(i32::MAX, 12) + 31;
 
 /// 暦上の 1 日を表す型（先発グレゴリオ暦）。
 ///
@@ -113,8 +119,31 @@ impl Date {
     }
 
     /// 序数から日付を復元します。
+    ///
+    /// # Panics
+    /// `ordinal` が表現可能な範囲（`i32::MIN` 年 1 月 1 日〜`i32::MAX` 年 12 月 31 日）を外れると
+    /// panic します（debug/release 共通）。panic させたくない場合は [`Date::checked_from_ordinal`]
+    /// を使ってください。
     pub fn from_ordinal(ordinal: i64) -> Self {
-        // 0 始まりにする。
+        Date::checked_from_ordinal(ordinal)
+            .expect("Date::from_ordinal: ordinal is out of the representable date range")
+    }
+
+    /// 序数から日付を復元します。表現可能な範囲（`i32::MIN` 年 1 月 1 日〜`i32::MAX` 年
+    /// 12 月 31 日）を外れる場合は `None` を返します。
+    ///
+    /// # Examples
+    /// ```
+    /// use jpholiday::Date;
+    /// assert_eq!(Date::checked_from_ordinal(1), Some(Date::new(1, 1, 1).unwrap()));
+    /// assert_eq!(Date::checked_from_ordinal(i64::MAX), None);
+    /// ```
+    pub fn checked_from_ordinal(ordinal: i64) -> Option<Self> {
+        if !(MIN_ORDINAL..=MAX_ORDINAL).contains(&ordinal) {
+            return None;
+        }
+
+        // 0 始まりにする（範囲検査済みなので桁あふれしない）。
         let mut n = ordinal - 1;
 
         let n400 = n.div_euclid(DAYS_PER_400Y);
@@ -132,14 +161,15 @@ impl Date {
 
         // n1 == 4 または n100 == 4 のときは閏年周期の末日（12/31）。
         if n1 == 4 || n100 == 4 {
-            return Date {
-                year: (year - 1) as i32,
+            return Some(Date {
+                year: i32::try_from(year - 1).ok()?,
                 month: 12,
                 day: 31,
-            };
+            });
         }
 
-        let year = year as i32;
+        // 範囲検査により常に i32 に収まるが、`as` による黙った切り捨ては行わない。
+        let year = i32::try_from(year).ok()?;
         let leap = n1 == 3 && (n4 != 24 || n100 == 3);
 
         let mut month = ((n + 50) >> 5) as u32;
@@ -151,29 +181,71 @@ impl Date {
         }
         n -= preceding;
 
-        Date {
+        Some(Date {
             year,
             month,
             day: (n + 1) as u32,
-        }
+        })
     }
 
     /// `days` 日後（負なら前）の日付を返します。
+    ///
+    /// # Panics
+    /// 結果が表現可能な範囲（`i32::MIN` 年 1 月 1 日〜`i32::MAX` 年 12 月 31 日）を外れると
+    /// panic します（debug/release 共通。年が黙って巻き戻ることはありません）。panic させたく
+    /// ない場合は [`Date::checked_add_days`] を使ってください。
     #[inline]
     pub fn add_days(self, days: i64) -> Self {
-        Date::from_ordinal(self.to_ordinal() + days)
+        self.checked_add_days(days)
+            .expect("Date::add_days: result is out of the representable date range")
+    }
+
+    /// `days` 日後（負なら前）の日付を返します。結果が表現可能な範囲を外れる場合は `None`。
+    ///
+    /// # Examples
+    /// ```
+    /// use jpholiday::Date;
+    /// let d = Date::new(2020, 2, 28).unwrap();
+    /// assert_eq!(d.checked_add_days(2), Some(Date::new(2020, 3, 1).unwrap()));
+    /// assert_eq!(d.checked_add_days(i64::MAX), None);
+    /// ```
+    #[inline]
+    pub fn checked_add_days(self, days: i64) -> Option<Self> {
+        self.to_ordinal()
+            .checked_add(days)
+            .and_then(Date::checked_from_ordinal)
     }
 
     /// 翌日を返します。
+    ///
+    /// # Panics
+    /// `i32::MAX` 年 12 月 31 日の翌日は表現できないため panic します。
+    /// [`Date::checked_succ`] を参照してください。
     #[inline]
     pub fn succ(self) -> Self {
         self.add_days(1)
     }
 
+    /// 翌日を返します。`i32::MAX` 年 12 月 31 日の翌日は表現できないため `None`。
+    #[inline]
+    pub fn checked_succ(self) -> Option<Self> {
+        self.checked_add_days(1)
+    }
+
     /// 前日を返します。
+    ///
+    /// # Panics
+    /// `i32::MIN` 年 1 月 1 日の前日は表現できないため panic します。
+    /// [`Date::checked_pred`] を参照してください。
     #[inline]
     pub fn pred(self) -> Self {
         self.add_days(-1)
+    }
+
+    /// 前日を返します。`i32::MIN` 年 1 月 1 日の前日は表現できないため `None`。
+    #[inline]
+    pub fn checked_pred(self) -> Option<Self> {
+        self.checked_add_days(-1)
     }
 
     /// ISO 曜日を返します（月曜=1 〜 日曜=7）。
@@ -187,6 +259,49 @@ impl Date {
     pub fn weekday(self) -> u32 {
         (self.to_ordinal() - 1).rem_euclid(7) as u32
     }
+}
+
+/// その年の初日と末日を返します。
+pub(crate) fn year_bounds(year: i32) -> (Date, Date) {
+    (
+        Date {
+            year,
+            month: 1,
+            day: 1,
+        },
+        Date {
+            year,
+            month: 12,
+            day: 31,
+        },
+    )
+}
+
+/// その月の初日と末日を返します。`month` が範囲外なら `None`。
+pub(crate) fn month_bounds(year: i32, month: u32) -> Option<(Date, Date)> {
+    let last = days_in_month(year, month)?;
+    Some((
+        Date {
+            year,
+            month,
+            day: 1,
+        },
+        Date {
+            year,
+            month,
+            day: last,
+        },
+    ))
+}
+
+/// `start` から `end` まで（両端を含む）の日付を昇順に返すイテレータ。`start > end` なら空。
+///
+/// `end` に達した時点で止まり、その先の翌日を求めないため、`end` が表現可能な最大の日付
+/// （`i32::MAX` 年 12 月 31 日）でも年の巻き戻りによる無限ループや panic を起こしません。
+pub(crate) fn days_inclusive(start: Date, end: Date) -> impl Iterator<Item = Date> {
+    std::iter::successors((start <= end).then_some(start), move |&d| {
+        if d < end { d.checked_succ() } else { None }
+    })
 }
 
 impl fmt::Display for Date {
