@@ -153,6 +153,13 @@ pub fn month_holidays(year: i32, month: u32) -> Vec<(Date, String)> {
 /// 指定範囲（両端を含む）のすべての祝日を `(日付, 名称)` のタプルで返します。
 ///
 /// `start > end` の場合は空を返します。
+///
+/// # 計算量に関する注意
+///
+/// 処理時間は範囲内の**日数に比例**します（1 日あたり数マイクロ秒、release ビルドの目安）。
+/// `i32::MIN` 年〜`i32::MAX` 年のような極端に広い範囲を渡すと、事実上終了せずに CPU を
+/// 占有します。外部からの入力など信頼できない値を `start`/`end` にそのまま渡さず、
+/// 呼び出し側で期間の上限を検証してください。
 pub fn between(start: Date, end: Date) -> Vec<(Date, String)> {
     collect_between(&snapshot(), start, end)
 }
