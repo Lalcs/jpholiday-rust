@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [main, master]
 
+# テストと lint はリポジトリへ書き込まない。GITHUB_TOKEN は読み取り専用に絞る
+# （リポジトリ既定の権限が write の場合でも、ジョブに不要な書き込み権限を与えない）。
+permissions:
+  contents: read
+
 env:
   CARGO_TERM_COLOR: always
   RUSTFLAGS: "-D warnings"
